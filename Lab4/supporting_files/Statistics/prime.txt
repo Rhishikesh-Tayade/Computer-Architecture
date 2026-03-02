@@ -1,0 +1,6 @@
+Number of instructions executed = 29
+Number of cycles taken = 53
+Number of stalls = 15
+Number of wrong branch instructions = 5
+Number of data hazards = 8
+Number of control hazards = 5

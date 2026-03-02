@@ -21,16 +21,10 @@ public class InstructionFetch {
 	{
 		if(IF_EnableLatch.isIF_enable())
 		{
-			if(EX_IF_Latch.isEX_IF_enable()){
-				System.out.println("PC updated after EX stage in IF stage: "+EX_IF_Latch.getPC());
-				containingProcessor.getRegisterFile().setProgramCounter(EX_IF_Latch.getPC());
-				EX_IF_Latch.setEX_IF_enable(false);
-			}
 			int currentPC = containingProcessor.getRegisterFile().getProgramCounter();
 			int newInstruction = containingProcessor.getMainMemory().getWord(currentPC);
 			IF_OF_Latch.setInstruction(newInstruction);
 			containingProcessor.getRegisterFile().setProgramCounter(currentPC + 1);
-			System.out.println("\nIF stage\nPC="+containingProcessor.getRegisterFile().getProgramCounter()+"\n"+"Instruction: "+newInstruction+"\n===========");
 			
 			IF_EnableLatch.setIF_enable(false);
 			IF_OF_Latch.setOF_enable(true);

@@ -1,92 +1,94 @@
 package generic;
 
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.nio.ByteBuffer;
 import processor.Clock;
 import processor.Processor;
 
 public class Simulator {
-		
+
 	static Processor processor;
 	static boolean simulationComplete;
-	
-	public static void setupSimulation(String assemblyProgramFile, Processor p)
-	{
+
+	public static void setupSimulation(String assemblyProgramFile, Processor p) {
 		Simulator.processor = p;
 		loadProgram(assemblyProgramFile);
-		
+
 		simulationComplete = false;
 	}
-	
-	static void loadProgram(String assemblyProgramFile)
-	{
-		/*
-		 * TODO
-		 * 1. load the program into memory according to the program layout described
-		 *    in the ISA specification
-		 * 2. set PC to the address of the first instruction in the main
-		 * 3. set the following registers:
-		 *     x0 = 0
-		 *     x1 = 65535
-		 *     x2 = 65535
-		 */
-		FileInputStream programFile = null;
 
-		try{
-			programFile = new FileInputStream(assemblyProgramFile);
-			int c;
-			int index = -1;
-			byte[] buffer = new byte[4];
-			
-			while((c=programFile.read(buffer))!=-1){
-				int dataInt = ByteBuffer.wrap(buffer).getInt();
-				if(index==-1){
-					processor.getRegisterFile().setProgramCounter(dataInt);
-				}else{
-					processor.getMainMemory().setWord(index, dataInt);
-				}
-				index++;
-				
+	/**
+	 * Loads the binary program from the specified file into the processor's memory.
+	 * Initializes registers and program counter.
+	 * 
+	 * @param assemblyProgramFile Path to the binary object file
+	 */
+	static void loadProgram(String assemblyProgramFile) {
+
+		try {
+			java.io.FileInputStream fis = new java.io.FileInputStream(assemblyProgramFile);
+
+			// Read header (4 bytes) - first instruction address
+			int firstCodeAddress = readBigEndianInt(fis);
+
+			// Read data section - starts at address 0
+			int address = 0;
+			while (address < firstCodeAddress) {
+				int dataWord = readBigEndianInt(fis);
+				processor.getMainMemory().setWord(address, dataWord);
+				address++;
 			}
+
+			// Read text section (instructions) - starts at firstCodeAddress
+			int instruction;
+			while ((instruction = readBigEndianInt(fis)) != -1) {
+				processor.getMainMemory().setWord(address, instruction);
+				address++;
+			}
+
+			fis.close();
+
+			// Set PC to first instruction
+			processor.getRegisterFile().setProgramCounter(firstCodeAddress);
+
+			// Initialize registers
 			processor.getRegisterFile().setValue(0, 0);
 			processor.getRegisterFile().setValue(1, 65535);
 			processor.getRegisterFile().setValue(2, 65535);
-			System.out.println(processor.getRegisterFile().getProgramCounter());
-			processor.printState(0, 50);
-			System.out.println("Read completed");
-			
-			programFile.close();
 
-		}catch(IOException e){
+		} catch (Exception e) {
+			System.err.println("Error loading program: " + e.getMessage());
 			e.printStackTrace();
 		}
 	}
-	
-	public static void simulate()
-	{
-		Statistics.setNumberOfCycles(0);
-		Statistics.setNumberOfInstructions(0);
-		while(simulationComplete == false)
-		{
+
+	// Helper method to read 32-bit integer in big-endian format
+	static int readBigEndianInt(java.io.FileInputStream fis) throws java.io.IOException {
+		int b1 = fis.read();
+		if (b1 == -1)
+			return -1; // EOF
+		int b2 = fis.read();
+		int b3 = fis.read();
+		int b4 = fis.read();
+		if (b2 == -1 || b3 == -1 || b4 == -1)
+			return -1; // Incomplete read
+
+		return (b1 << 24) | (b2 << 16) | (b3 << 8) | b4;
+	}
+
+	public static void simulate() {
+		while (simulationComplete == false) {
 			processor.getIFUnit().performIF();
-			Clock.incrementClock();
 			processor.getOFUnit().performOF();
-			Clock.incrementClock();
 			processor.getEXUnit().performEX();
-			Clock.incrementClock();
 			processor.getMAUnit().performMA();
-			Clock.incrementClock();
 			processor.getRWUnit().performRW();
 			Clock.incrementClock();
-			Statistics.setNumberOfCycles(Statistics.getNumberOfCycles()+1);
-			Statistics.setNumberOfInstructions(Statistics.getNumberOfInstructions()+1);
-
 		}
+
+		// Set statistics
+		Statistics.numberOfCycles = (int) Clock.getCurrentTime();
 	}
-	
-	public static void setSimulationComplete(boolean value)
-	{
+
+	public static void setSimulationComplete(boolean value) {
 		simulationComplete = value;
 	}
 }
