@@ -1,5 +1,4 @@
 package processor.pipeline;
-
 import processor.Processor;
 
 public class InstructionFetch {

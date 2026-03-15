@@ -26,23 +26,9 @@ public class OperandFetch {
 			return false;
 		int idx = opcode.ordinal();
 		return idx <= 22; // add to load (0 to 22)
-	}
-
+	} 
 	public void performOF() {
 		if (IF_OF_Latch.isOF_enable()) {
-			// Branch Hazard: If a branch was taken in EX stage, flush the current
-			// instruction in OF
-			if (containingProcessor.getEX_IF_Latch().isBranch()) {
-				// Note: using direct path through processor to be sure, or just EX_IF_Latch if
-				// visible
-				// Actually, we can use the field if we have it or the processor's one.
-				// Let's use the one in containingProcessor.
-				OF_EX_Latch.setEX_enable(false);
-				IF_OF_Latch.setOF_enable(false);
-				generic.Statistics.numberOfWrongBranchInstructions++;
-				generic.Statistics.numberOfControlHazards++;
-				return;
-			}
 
 			int instruction = IF_OF_Latch.getInstruction();
 			int opcodeInt = (instruction >>> 27) & 0x1F;

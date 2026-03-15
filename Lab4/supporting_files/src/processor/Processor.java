@@ -103,4 +103,16 @@ public class Processor {
 		return EX_IF_Latch;
 	}
 
+	public IF_EnableLatchType getIF_EnableLatch() {
+		return IF_EnableLatch;
+	}
+
+	public IF_OF_LatchType getIF_OF_Latch() {
+		return IF_OF_Latch;
+	}
+
+	public OF_EX_LatchType getOF_EX_Latch() {
+		return OF_EX_Latch;
+	}
+
 }

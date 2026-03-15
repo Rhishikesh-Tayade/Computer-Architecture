@@ -175,6 +175,14 @@ public class Execute {
 				EX_IF_Latch.setIsBranch(true);
 				EX_IF_Latch.setBranchTarget(branchTarget);
 				containingProcessor.getRegisterFile().setProgramCounter(branchTarget);
+
+				// Control Hazard: Flush IF_OF and OF_EX latches
+				containingProcessor.getIF_EnableLatch().setIF_enable(true);
+				containingProcessor.getIF_OF_Latch().setOF_enable(false);
+				OF_EX_Latch.setEX_enable(false);
+				
+				generic.Statistics.numberOfWrongBranchInstructions++;
+				generic.Statistics.numberOfControlHazards++;
 			}
 
 			// Pass data to MA stage
