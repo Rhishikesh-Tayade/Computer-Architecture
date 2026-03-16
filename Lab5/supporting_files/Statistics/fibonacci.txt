@@ -1,0 +1,7 @@
+Number of instructions executed = 78
+Number of cycles taken = 3174
+Number of stalls = 33
+Number of wrong branch instructions = 16
+Number of data hazards = 11
+Number of control hazards = 16
+Throughput (instructions per cycle) = 0.024575
